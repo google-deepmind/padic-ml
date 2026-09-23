@@ -4,7 +4,7 @@
 Thanks for your patience!**
 
 This is a JAX library for differentiable training of _p_-adic neural networks,
-implementing methods described in *Continuous Optimization for p-adic Models*
+implementing methods described in *[Continuous Optimization for p-adic Models](https://arxiv.org/abs/2609.25501)*
 (arXiv 2026).
 
 Install with `pip install padic-ml`.
