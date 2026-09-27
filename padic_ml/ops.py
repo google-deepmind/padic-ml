@@ -178,17 +178,18 @@ def sub(
 def _max_valuation(p: int, dtype: jnp.dtype) -> int:
   """Maximum p-adic valuation representable by an integer dtype.
 
-  Computes floor(log_p(max_val)) using integer arithmetic to avoid
-  floating-point precision issues with math.log.
+  Computes the bound from the largest representable magnitude, including
+  the signed minimum, using integer arithmetic to avoid rounding errors.
 
   Args:
     p: Prime base.
     dtype: Integer dtype whose range bounds the valuation.
 
   Returns:
-    The largest v such that p^v fits within the dtype's range.
+    The largest v such that p^v fits within either endpoint's magnitude.
   """
-  v, n = 0, jnp.iinfo(dtype).max
+  limits = jnp.iinfo(dtype)
+  v, n = 0, max(abs(int(limits.min)), int(limits.max))
   while n >= p:
     n //= p
     v += 1
@@ -214,10 +215,10 @@ def decompose(
     (unit, valuation): unit tensor u in Z and int valuation tensor v in Z.
   """
   x_arr = jnp.asarray(x)
-  abs_x = jnp.abs(x_arr)
-  is_zero = abs_x == 0
+  is_zero = x_arr == 0
   # Replace zeros with 1 to avoid division-by-zero in the loop body.
-  safe_x = jnp.where(is_zero, 1, abs_x)
+  # Divide signed values directly: abs(minimum signed integer) overflows.
+  safe_x = jnp.where(is_zero, 1, x_arr)
 
   def body_fun(_, state):
     curr_x, val = state
@@ -235,8 +236,8 @@ def decompose(
       0, max_iters, body_fun, (safe_x, init_val)
   )
 
-  # Restore sign and canonicalize zeros to (u=0, v=0).
-  unit = jnp.where(is_zero, 0, jnp.sign(x_arr) * final_x)
+  # Division already preserves the sign; canonicalize zeros to (u=0, v=0).
+  unit = jnp.where(is_zero, 0, final_x)
   valuation = jnp.where(is_zero, 0, final_val)
   return unit, valuation
 

@@ -302,10 +302,10 @@ class DecomposeTest(absltest.TestCase):
 
   def test_max_valuation_values(self):
     """Verifies _max_valuation returns correct bounds for known cases."""
-    # 2^62 fits in int64 (max 2^63-1); 2^63 does not.
-    self.assertEqual(ops._max_valuation(2, jnp.dtype(jnp.int64)), 62)
-    # 2^30 fits in int32 (max 2^31-1); 2^31 does not.
-    self.assertEqual(ops._max_valuation(2, jnp.dtype(jnp.int32)), 30)
+    # -2^63 is representable in int64, requiring 63 divisions by 2.
+    self.assertEqual(ops._max_valuation(2, jnp.dtype(jnp.int64)), 63)
+    # -2^31 is representable in int32, requiring 31 divisions by 2.
+    self.assertEqual(ops._max_valuation(2, jnp.dtype(jnp.int32)), 31)
     # 3^39 fits in int64; 3^40 does not.
     self.assertEqual(ops._max_valuation(3, jnp.dtype(jnp.int64)), 39)
 
